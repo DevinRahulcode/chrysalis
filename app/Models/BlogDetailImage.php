@@ -12,7 +12,12 @@ class BlogDetailImage extends Model
 
     protected $fillable = [
         'blog_id',
-        'image_slider',
+        'blog_image_slider',
+        'order',
+        'status',
+        'created_by',
+        'updated_by',
+        'deleted_by',
     ];
 
     public function blog()

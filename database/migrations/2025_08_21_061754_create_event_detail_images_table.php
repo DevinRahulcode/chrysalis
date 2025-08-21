@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('event_id')->nullable();
             $table->foreign('event_id')->references('id')->on('events')->onDelete('cascade');
             $table->string('event_image_slider')->nullable();
+             $table->unsignedInteger('order')->nullable();
             $table->char('status', 1)->default('Y')->comment('Y = Active, N = Inactive');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();

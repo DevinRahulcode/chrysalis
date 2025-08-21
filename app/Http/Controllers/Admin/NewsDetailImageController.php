@@ -26,7 +26,7 @@ class BlogDetailImageController extends Controller
      */
     public function create()
     {
-        $blogs = Blog::select('id', 'title')->where('status', 'Y')->orderBy('title', 'asc')->get();
+        $blogs = Blog::select('id', 'blog_title')->where('status', 'Y')->orderBy('blog_title', 'asc')->get();
         return view('admin.blog_detail_images.create', compact('blogs'));
     }
 
@@ -38,6 +38,8 @@ class BlogDetailImageController extends Controller
         $validator = Validator::make($request->all(), [
             'blog_id' => 'required|exists:blogs,id',
             'blog_image_slider' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'order' => 'nullable|integer|min:0',
+            'status' => 'required|in:Y,N',
         ]);
 
         if ($validator->fails()) {
@@ -49,6 +51,9 @@ class BlogDetailImageController extends Controller
 
             $data = [
                 'blog_id' => $request->blog_id,
+                'order' => $request->order,
+                'status' => $request->status,
+                'created_by' => Auth::id(),
             ];
 
             // Handle image upload
@@ -74,7 +79,7 @@ class BlogDetailImageController extends Controller
     public function show($id)
     {
         $blogDetailImage = BlogDetailImage::findOrFail($id);
-        $blogs = Blog::select('id', 'title')->where('status', 'Y')->orderBy('title', 'asc')->get();
+        $blogs = Blog::select('id', 'blog_title')->where('status', 'Y')->orderBy('blog_title', 'asc')->get();
         $imageSliderUrl = $blogDetailImage->blog_image_slider ? Storage::disk('public')->url($blogDetailImage->blog_image_slider) : null;
 
         return view('admin.blog_detail_images.edit', compact('blogDetailImage', 'blogs', 'imageSliderUrl'));
@@ -90,6 +95,8 @@ class BlogDetailImageController extends Controller
         $validator = Validator::make($request->all(), [
             'blog_id' => 'required|exists:blogs,id',
             'blog_image_slider' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'order' => 'nullable|integer|min:0',
+            'status' => 'required|in:Y,N',
         ]);
 
         if ($validator->fails()) {
@@ -101,6 +108,9 @@ class BlogDetailImageController extends Controller
 
             $data = [
                 'blog_id' => $request->blog_id,
+                'order' => $request->order,
+                'status' => $request->status,
+                'updated_by' => Auth::id(),
             ];
 
             // Handle image upload
@@ -133,6 +143,7 @@ class BlogDetailImageController extends Controller
             \DB::beginTransaction();
 
             $blogDetailImage = BlogDetailImage::findOrFail($id);
+            $blogDetailImage->update(['deleted_by' => Auth::id()]);
             $blogDetailImage->delete();
 
             \DB::commit();
@@ -154,7 +165,10 @@ class BlogDetailImageController extends Controller
         return DataTables::eloquent($model)
             ->addIndexColumn()
             ->editColumn('blog_id', function ($blogDetailImage) {
-                return $blogDetailImage->blog ? $blogDetailImage->blog->title : 'N/A';
+                return $blogDetailImage->blog ? $blogDetailImage->blog->blog_title : 'N/A';
+            })
+            ->editColumn('status', function ($blogDetailImage) {
+                return $blogDetailImage->status === 'Y' ? 'Active' : 'Inactive';
             })
             ->addColumn('blog_image_slider', function ($blogDetailImage) {
                 return $blogDetailImage->blog_image_slider ? '<img src="' . Storage::disk('public')->url($blogDetailImage->blog_image_slider) . '" width="50" alt="Slider Image">' : 'No Image';

@@ -14,15 +14,23 @@ return new class extends Migration
         Schema::create('news', function (Blueprint $table) {
             $table->id();
             $table->text('news_title')->nullable();
-            $table->string('news_hero_image')->nullable();
             $table->unsignedInteger('order')->nullable();
-            $table->string('news_card_image')->nullable();
+            $table->string('date')->nullable();
+            $table->string('thumbnail')->nullable();
             $table->LONGTEXT('news_description')->nullable();
-            $table->text('other_news_description')->nullable();
-            $table->text('news_listing_description')->nullable();
+            $table->char('status')->default('Y');
             $table->string('slug', 255)->unique();
-            $table->json('news_related_post_id')->nullable();
-            $table->char('status',1)->default('Y');
+          
+
+            // SEO fields
+            $table->string('page_title')->nullable();
+            $table->string('description')->nullable();
+            $table->string('keywords')->nullable();
+            $table->string('og_image')->nullable();
+            $table->string('og_title')->nullable();
+            $table->string('og_description')->nullable();
+
+
             $table->unsignedInteger('created_by')->nullable();
             $table->unsignedInteger('updated_by')->nullable();
             $table->unsignedInteger('deleted_by')->nullable();

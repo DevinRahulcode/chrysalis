@@ -9,6 +9,11 @@ class EventDetailImage extends Model
     protected $fillable = [
         'event_id',
         'event_image_slider',
+        'order',
+        'status',
+        'created_by',
+        'updated_by',
+        'deleted_by',
     ];
 
     public function event()

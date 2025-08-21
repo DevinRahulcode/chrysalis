@@ -14,18 +14,26 @@ return new class extends Migration
         Schema::create('events', function (Blueprint $table) {
            $table->id();
             $table->text('event_title')->nullable();
-            $table->string('event_hero_image')->nullable();
             $table->unsignedInteger('order')->nullable();
-            $table->string('event_card_image')->nullable();
-            $table->longText('event_description')->nullable();
-            $table->text('other_event_description')->nullable();
-            $table->text('event_listing_description')->nullable();
+            $table->string('date')->nullable();
+            $table->string('thumbnail')->nullable();
+            $table->LONGTEXT('news_description')->nullable();
+            $table->char('status')->default('Y');
             $table->string('slug', 255)->unique();
-            $table->json('event_related_post_id')->nullable();
-            $table->char('status', 1)->default('Y');
-            $table->unsignedBigInteger('created_by')->nullable();
-            $table->unsignedBigInteger('updated_by')->nullable();
-            $table->unsignedBigInteger('deleted_by')->nullable();
+          
+
+            // SEO fields
+            $table->string('page_title')->nullable();
+            $table->string('description')->nullable();
+            $table->string('keywords')->nullable();
+            $table->string('og_image')->nullable();
+            $table->string('og_title')->nullable();
+            $table->string('og_description')->nullable();
+
+
+            $table->unsignedInteger('created_by')->nullable();
+            $table->unsignedInteger('updated_by')->nullable();
+            $table->unsignedInteger('deleted_by')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

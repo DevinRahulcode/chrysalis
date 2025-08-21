@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-
 use App\Models\Event;
 use App\Models\EventDetailImage;
 use Illuminate\Http\Request;
@@ -39,6 +38,8 @@ class EventDetailImageController extends Controller
         $validator = Validator::make($request->all(), [
             'event_id' => 'required|exists:events,id',
             'event_image_slider' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'order' => 'nullable|integer|min:0',
+            'status' => 'required|in:Y,N',
         ]);
 
         if ($validator->fails()) {
@@ -50,6 +51,9 @@ class EventDetailImageController extends Controller
 
             $data = [
                 'event_id' => $request->event_id,
+                'order' => $request->order,
+                'status' => $request->status,
+                'created_by' => Auth::id(),
             ];
 
             // Handle image upload
@@ -91,6 +95,8 @@ class EventDetailImageController extends Controller
         $validator = Validator::make($request->all(), [
             'event_id' => 'required|exists:events,id',
             'event_image_slider' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'order' => 'nullable|integer|min:0',
+            'status' => 'required|in:Y,N',
         ]);
 
         if ($validator->fails()) {
@@ -102,6 +108,9 @@ class EventDetailImageController extends Controller
 
             $data = [
                 'event_id' => $request->event_id,
+                'order' => $request->order,
+                'status' => $request->status,
+                'updated_by' => Auth::id(),
             ];
 
             // Handle image upload
@@ -134,6 +143,7 @@ class EventDetailImageController extends Controller
             \DB::beginTransaction();
 
             $eventDetailImage = EventDetailImage::findOrFail($id);
+            $eventDetailImage->update(['deleted_by' => Auth::id()]);
             $eventDetailImage->delete();
 
             \DB::commit();
@@ -156,6 +166,9 @@ class EventDetailImageController extends Controller
             ->addIndexColumn()
             ->editColumn('event_id', function ($eventDetailImage) {
                 return $eventDetailImage->event ? $eventDetailImage->event->event_title : 'N/A';
+            })
+            ->editColumn('status', function ($eventDetailImage) {
+                return $eventDetailImage->status === 'Y' ? 'Active' : 'Inactive';
             })
             ->addColumn('event_image_slider', function ($eventDetailImage) {
                 return $eventDetailImage->event_image_slider ? '<img src="' . Storage::disk('public')->url($eventDetailImage->event_image_slider) . '" width="50" alt="Slider Image">' : 'No Image';

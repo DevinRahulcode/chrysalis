@@ -13,6 +13,11 @@ class NewsDetailImage extends Model
     protected $fillable = [
         'news_id',
         'news_image_slider',
+        'order',
+        'status',
+        'created_by',
+        'updated_by',
+        'deleted_by',
     ];
 
     public function news()

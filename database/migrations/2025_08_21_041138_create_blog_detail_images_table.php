@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('blog_id')->nullable();
             $table->foreign('blog_id')->references('id')->on('blogs')->onDelete('cascade');
             $table->string('blog_image_slider')->nullable();
+             $table->unsignedInteger('order')->nullable();
              $table->char('status', 1)->default('1')->comment('Y = Active, N = inactive');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();

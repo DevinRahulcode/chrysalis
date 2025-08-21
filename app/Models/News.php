@@ -9,16 +9,20 @@ class News extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = [
+     protected $fillable = [
         'news_title',
-        'news_order',
-        'news_card_image',
+        'order',
+        'date',
+        'thumbnail',
         'news_description',
-        'news_other_description',
-        'news_listing_description',
-        'slug',
-        'news_related_post_id',
         'status',
+        'slug',
+        'page_title',
+        'description',
+        'keywords',
+        'og_image',
+        'og_title',
+        'og_description',
         'created_by',
         'updated_by',
         'deleted_by',

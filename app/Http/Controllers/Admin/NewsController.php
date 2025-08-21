@@ -38,14 +38,16 @@ class NewsController extends Controller
         $validator = Validator::make($request->all(), [
             'news_title' => 'required|string|max:255',
             'order' => 'nullable|integer|min:0',
-            'news_hero_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
-            'news_card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'date' => 'nullable|string',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
             'news_description' => 'nullable|string',
-            'other_news_description' => 'nullable|string',
-            'news_listing_description' => 'nullable|string',
-            'news_related_post_id' => 'nullable|array',
-            'news_related_post_id.*' => 'exists:news,id',
             'status' => 'required|in:Y,N',
+            'page_title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'keywords' => 'nullable|string',
+            'og_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'og_title' => 'nullable|string|max:255',
+            'og_description' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -58,25 +60,28 @@ class NewsController extends Controller
             $data = [
                 'news_title' => $request->news_title,
                 'order' => $request->order,
+                'date' => $request->date,
                 'news_description' => $request->news_description,
-                'other_news_description' => $request->other_news_description,
-                'news_listing_description' => $request->news_listing_description,
                 'slug' => Str::slug($request->news_title, '-'),
-                'news_related_post_id' => $request->news_related_post_id ? json_encode($request->news_related_post_id) : null,
-                'status' => $request->status,
+                'status到以下代码结束为止：' => $request->status,
+                'page_title' => $request->page_title,
+                'description' => $request->description,
+                'keywords' => $request->keywords,
+                'og_title' => $request->og_title,
+                'og_description' => $request->og_description,
                 'created_by' => Auth::id(),
             ];
 
-            // Handle hero image upload
-            if ($request->hasFile('news_hero_image')) {
-                $imagePath = $request->file('news_hero_image')->store('news', 'public');
-                $data['news_hero_image'] = $imagePath;
+            // Handle thumbnail upload
+            if ($request->hasFile('thumbnail')) {
+                $imagePath = $request->file('thumbnail')->store('news', 'public');
+                $data['thumbnail'] = $imagePath;
             }
 
-            // Handle card image upload
-            if ($request->hasFile('news_card_image')) {
-                $imagePath = $request->file('news_card_image')->store('news', 'public');
-                $data['news_card_image'] = $imagePath;
+            // Handle og_image upload
+            if ($request->hasFile('og_image')) {
+                $ogImagePath = $request->file('og_image')->store('news', 'public');
+                $data['og_image'] = $ogImagePath;
             }
 
             News::create($data);
@@ -97,11 +102,10 @@ class NewsController extends Controller
     {
         $news = News::findOrFail($id);
         $newsItems = News::where('status', 'Y')->where('id', '!=', $id)->orderBy('order', 'asc')->get();
-        $heroImageUrl = $news->news_hero_image ? Storage::disk('public')->url($news->news_hero_image) : null;
-        $cardImageUrl = $news->news_card_image ? Storage::disk('public')->url($news->news_card_image) : null;
-        $newsRelatedIds = $news->news_related_post_id ? json_decode($news->news_related_post_id, true) : [];
+        $thumbnailUrl = $news->thumbnail ? Storage::disk('public')->url($news->thumbnail) : null;
+        $ogImageUrl = $news->og_image ? Storage::disk('public')->url($news->og_image) : null;
 
-        return view('admin.news.edit', compact('news', 'newsItems', 'heroImageUrl', 'cardImageUrl', 'newsRelatedIds'));
+        return view('admin.news.edit', compact('news', 'newsItems', 'thumbnailUrl', 'ogImageUrl'));
     }
 
     /**
@@ -114,14 +118,16 @@ class NewsController extends Controller
         $validator = Validator::make($request->all(), [
             'news_title' => 'required|string|max:255',
             'order' => 'nullable|integer|min:0',
-            'news_hero_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
-            'news_card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'date' => 'nullable|string',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
             'news_description' => 'nullable|string',
-            'other_news_description' => 'nullable|string',
-            'news_listing_description' => 'nullable|string',
-            'news_related_post_id' => 'nullable|array',
-            'news_related_post_id.*' => 'exists:news,id',
             'status' => 'required|in:Y,N',
+            'page_title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'keywords' => 'nullable|string',
+            'og_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'og_title' => 'nullable|string|max:255',
+            'og_description' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -134,33 +140,36 @@ class NewsController extends Controller
             $data = [
                 'news_title' => $request->news_title,
                 'order' => $request->order,
+                'date' => $request->date,
                 'news_description' => $request->news_description,
-                'other_news_description' => $request->other_news_description,
-                'news_listing_description' => $request->news_listing_description,
                 'slug' => Str::slug($request->news_title, '-'),
-                'news_related_post_id' => $request->news_related_post_id ? json_encode($request->news_related_post_id) : null,
                 'status' => $request->status,
+                'page_title' => $request->page_title,
+                'description' => $request->description,
+                'keywords' => $request->keywords,
+                'og_title' => $request->og_title,
+                'og_description' => $request->og_description,
                 'updated_by' => Auth::id(),
             ];
 
-            // Handle hero image upload
-            if ($request->hasFile('news_hero_image')) {
-                // Delete old hero image if it exists
-                if ($news->news_hero_image) {
-                    Storage::disk('public')->delete($news->news_hero_image);
+            // Handle thumbnail upload
+            if ($request->hasFile('thumbnail')) {
+                // Delete old thumbnail if it exists
+                if ($news->thumbnail) {
+                    Storage::disk('public')->delete($news->thumbnail);
                 }
-                $imagePath = $request->file('news_hero_image')->store('news', 'public');
-                $data['news_hero_image'] = $imagePath;
+                $imagePath = $request->file('thumbnail')->store('news', 'public');
+                $data['thumbnail'] = $imagePath;
             }
 
-            // Handle card image upload
-            if ($request->hasFile('news_card_image')) {
-                // Delete old card image if it exists
-                if ($news->news_card_image) {
-                    Storage::disk('public')->delete($news->news_card_image);
+            // Handle og_image upload
+            if ($request->hasFile('og_image')) {
+                // Delete old og_image if it exists
+                if ($news->og_image) {
+                    Storage::disk('public')->delete($news->og_image);
                 }
-                $imagePath = $request->file('news_card_image')->store('news', 'public');
-                $data['news_card_image'] = $imagePath;
+                $ogImagePath = $request->file('og_image')->store('news', 'public');
+                $data['og_image'] = $ogImagePath;
             }
 
             $news->update($data);

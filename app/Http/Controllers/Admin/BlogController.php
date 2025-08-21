@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-
 use App\Models\Blog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -27,7 +26,7 @@ class BlogController extends Controller
      */
     public function create()
     {
-        $blogs = Blog::select('id', 'title')->where('status', 'Y')->orderBy('order', 'asc')->get();
+        $blogs = Blog::select('id', 'blog_title')->where('status', 'Y')->orderBy('order', 'asc')->get();
         return view('admin.blogs.create', compact('blogs'));
     }
 
@@ -37,15 +36,17 @@ class BlogController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
+            'blog_title' => 'required|string|max:255',
             'order' => 'nullable|integer|min:0',
-            'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
-            'description' => 'nullable|string',
-            'other_blogs_description' => 'nullable|string',
-            'listing_description' => 'nullable|string',
-            'related_post_id' => 'nullable|array',
-            'related_post_id.*' => 'exists:blogs,id',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'news_description' => 'nullable|string',
             'status' => 'required|in:Y,N',
+            'page_title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'keywords' => 'nullable|string',
+            'og_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'og_title' => 'nullable|string|max:255',
+            'og_description' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -56,21 +57,30 @@ class BlogController extends Controller
             \DB::beginTransaction();
 
             $data = [
-                'title' => $request->title,
+                'blog_title' => $request->blog_title,
                 'order' => $request->order,
-                'description' => $request->description,
-                'other_blogs_description' => $request->other_blogs_description,
-                'listing_description' => $request->listing_description,
-                'slug' => Str::slug($request->title, '-'),
-                'related_post_id' => $request->related_post_id ? json_encode($request->related_post_id) : null,
+                'date' => $request->date,
+                'news_description' => $request->news_description,
+                'slug' => Str::slug($request->blog_title, '-'),
                 'status' => $request->status,
+                'page_title' => $request->page_title,
+                'description' => $request->description,
+                'keywords' => $request->keywords,
+                'og_title' => $request->og_title,
+                'og_description' => $request->og_description,
                 'created_by' => Auth::id(),
             ];
 
-            // Handle image upload
-            if ($request->hasFile('card_image')) {
-                $imagePath = $request->file('card_image')->store('blogs', 'public');
-                $data['card_image'] = $imagePath;
+            // Handle thumbnail upload
+            if ($request->hasFile('thumbnail')) {
+                $imagePath = $request->file('thumbnail')->store('blogs', 'public');
+                $data['thumbnail'] = $imagePath;
+            }
+
+            // Handle og_image upload
+            if ($request->hasFile('og_image')) {
+                $ogImagePath = $request->file('og_image')->store('blogs', 'public');
+                $data['og_image'] = $ogImagePath;
             }
 
             Blog::create($data);
@@ -91,10 +101,10 @@ class BlogController extends Controller
     {
         $blog = Blog::findOrFail($id);
         $blogs = Blog::where('status', 'Y')->where('id', '!=', $id)->orderBy('order', 'asc')->get();
-        $cardImageUrl = $blog->card_image ? Storage::disk('public')->url($blog->card_image) : null;
-        $blogRelatedIds = $blog->related_post_id ? json_decode($blog->related_post_id, true) : [];
+        $thumbnailUrl = $blog->thumbnail ? Storage::disk('public')->url($blog->thumbnail) : null;
+        $ogImageUrl = $blog->og_image ? Storage::disk('public')->url($blog->og_image) : null;
 
-        return view('admin.blogs.edit', compact('blog', 'blogs', 'cardImageUrl', 'blogRelatedIds'));
+        return view('admin.blogs.edit', compact('blog', 'blogs', 'thumbnailUrl', 'ogImageUrl'));
     }
 
     /**
@@ -105,15 +115,17 @@ class BlogController extends Controller
         $blog = Blog::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
+            'blog_title' => 'required|string|max:255',
             'order' => 'nullable|integer|min:0',
-            'card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
-            'description' => 'nullable|string',
-            'other_blogs_description' => 'nullable|string',
-            'listing_description' => 'nullable|string',
-            'related_post_id' => 'nullable|array',
-            'related_post_id.*' => 'exists:blogs,id',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'news_description' => 'nullable|string',
             'status' => 'required|in:Y,N',
+            'page_title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'keywords' => 'nullable|string',
+            'og_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'og_title' => 'nullable|string|max:255',
+            'og_description' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -124,25 +136,38 @@ class BlogController extends Controller
             \DB::beginTransaction();
 
             $data = [
-                'title' => $request->title,
+                'blog_title' => $request->blog_title,
                 'order' => $request->order,
-                'description' => $request->description,
-                'other_blogs_description' => $request->other_blogs_description,
-                'listing_description' => $request->listing_description,
-                'slug' => Str::slug($request->title, '-'),
-                'related_post_id' => $request->related_post_id ? json_encode($request->related_post_id) : null,
+                'date' => $request->date,
+                'news_description' => $request->news_description,
+                'slug' => Str::slug($request->blog_title, '-'),
                 'status' => $request->status,
+                'page_title' => $request->page_title,
+                'description' => $request->description,
+                'keywords' => $request->keywords,
+                'og_title' => $request->og_title,
+                'og_description' => $request->og_description,
                 'updated_by' => Auth::id(),
             ];
 
-            // Handle image upload
-            if ($request->hasFile('card_image')) {
-                // Delete old image if it exists
-                if ($blog->card_image) {
-                    Storage::disk('public')->delete($blog->card_image);
+            // Handle thumbnail upload
+            if ($request->hasFile('thumbnail')) {
+                // Delete old thumbnail if it exists
+                if ($blog->thumbnail) {
+                    Storage::disk('public')->delete($blog->thumbnail);
                 }
-                $imagePath = $request->file('card_image')->store('blogs', 'public');
-                $data['card_image'] = $imagePath;
+                $imagePath = $request->file('thumbnail')->store('blogs', 'public');
+                $data['thumbnail'] = $imagePath;
+            }
+
+            // Handle og_image upload
+            if ($request->hasFile('og_image')) {
+                // Delete old og_image if it exists
+                if ($blog->og_image) {
+                    Storage::disk('public')->delete($blog->og_image);
+                }
+                $ogImagePath = $request->file('og_image')->store('blogs', 'public');
+                $data['og_image'] = $ogImagePath;
             }
 
             $blog->update($data);
@@ -211,8 +236,8 @@ class BlogController extends Controller
 
         return DataTables::eloquent($model)
             ->addIndexColumn()
-            ->editColumn('title', function ($blog) {
-                return $blog->title;
+            ->editColumn('blog_title', function ($blog) {
+                return $blog->blog_title;
             })
             ->addColumn('edit', function ($blog) {
                 $edit_url = route('blog.show', $blog->id);

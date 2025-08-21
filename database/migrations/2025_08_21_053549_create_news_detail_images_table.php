@@ -16,11 +16,10 @@ return new class extends Migration
            $table->unsignedBigInteger('news_id')->nullable();
             $table->foreign('news_id')->references('id')->on('news')->onDelete('cascade');
             $table->string('news_image_slider')->nullable();
+            $table->unsignedInteger('order')->nullable();
             $table->char('status', 1)->default('Y')->comment('Y = Active, N = Inactive');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
-            $table->unsignedBigInteger('deleted_by')->nullable();
-            $table->softDeletes()->comment('deleted_at column for soft delete');
             $table->timestamps();
         });
     }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Admin;
 
-
 use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -39,14 +38,16 @@ class EventController extends Controller
         $validator = Validator::make($request->all(), [
             'event_title' => 'required|string|max:255',
             'order' => 'nullable|integer|min:0',
-            'event_hero_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
-            'event_card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
-            'event_description' => 'nullable|string',
-            'other_event_description' => 'nullable|string',
-            'event_listing_description' => 'nullable|string',
-            'event_related_post_id' => 'nullable|array',
-            'event_related_post_id.*' => 'exists:events,id',
+            'date' => 'nullable|string',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'news_description' => 'nullable|string',
             'status' => 'required|in:Y,N',
+            'page_title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'keywords' => 'nullable|string',
+            'og_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'og_title' => 'nullable|string|max:255',
+            'og_description' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -59,25 +60,28 @@ class EventController extends Controller
             $data = [
                 'event_title' => $request->event_title,
                 'order' => $request->order,
-                'event_description' => $request->event_description,
-                'other_event_description' => $request->other_event_description,
-                'event_listing_description' => $request->event_listing_description,
+                'date' => $request->date,
+                'news_description' => $request->news_description,
                 'slug' => Str::slug($request->event_title, '-'),
-                'event_related_post_id' => $request->event_related_post_id ? json_encode($request->event_related_post_id) : null,
                 'status' => $request->status,
+                'page_title' => $request->page_title,
+                'description' => $request->description,
+                'keywords' => $request->keywords,
+                'og_title' => $request->og_title,
+                'og_description' => $request->og_description,
                 'created_by' => Auth::id(),
             ];
 
-            // Handle hero image upload
-            if ($request->hasFile('event_hero_image')) {
-                $imagePath = $request->file('event_hero_image')->store('events', 'public');
-                $data['event_hero_image'] = $imagePath;
+            // Handle thumbnail upload
+            if ($request->hasFile('thumbnail')) {
+                $imagePath = $request->file('thumbnail')->store('events', 'public');
+                $data['thumbnail'] = $imagePath;
             }
 
-            // Handle card image upload
-            if ($request->hasFile('event_card_image')) {
-                $imagePath = $request->file('event_card_image')->store('events', 'public');
-                $data['event_card_image'] = $imagePath;
+            // Handle og_image upload
+            if ($request->hasFile('og_image')) {
+                $ogImagePath = $request->file('og_image')->store('events', 'public');
+                $data['og_image'] = $ogImagePath;
             }
 
             Event::create($data);
@@ -98,11 +102,10 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
         $events = Event::where('status', 'Y')->where('id', '!=', $id)->orderBy('order', 'asc')->get();
-        $heroImageUrl = $event->event_hero_image ? Storage::disk('public')->url($event->event_hero_image) : null;
-        $cardImageUrl = $event->event_card_image ? Storage::disk('public')->url($event->event_card_image) : null;
-        $eventRelatedIds = $event->event_related_post_id ? json_decode($event->event_related_post_id, true) : [];
+        $thumbnailUrl = $event->thumbnail ? Storage::disk('public')->url($event->thumbnail) : null;
+        $ogImageUrl = $event->og_image ? Storage::disk('public')->url($event->og_image) : null;
 
-        return view('admin.events.edit', compact('event', 'events', 'heroImageUrl', 'cardImageUrl', 'eventRelatedIds'));
+        return view('admin.events.edit', compact('event', 'events', 'thumbnailUrl', 'ogImageUrl'));
     }
 
     /**
@@ -115,14 +118,16 @@ class EventController extends Controller
         $validator = Validator::make($request->all(), [
             'event_title' => 'required|string|max:255',
             'order' => 'nullable|integer|min:0',
-            'event_hero_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
-            'event_card_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
-            'event_description' => 'nullable|string',
-            'other_event_description' => 'nullable|string',
-            'event_listing_description' => 'nullable|string',
-            'event_related_post_id' => 'nullable|array',
-            'event_related_post_id.*' => 'exists:events,id',
+            'date' => 'nullable|string',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'news_description' => 'nullable|string',
             'status' => 'required|in:Y,N',
+            'page_title' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'keywords' => 'nullable|string',
+            'og_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Max 2MB
+            'og_title' => 'nullable|string|max:255',
+            'og_description' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -135,33 +140,36 @@ class EventController extends Controller
             $data = [
                 'event_title' => $request->event_title,
                 'order' => $request->order,
-                'event_description' => $request->event_description,
-                'other_event_description' => $request->other_event_description,
-                'event_listing_description' => $request->event_listing_description,
+                'date' => $request->date,
+                'news_description' => $request->news_description,
                 'slug' => Str::slug($request->event_title, '-'),
-                'event_related_post_id' => $request->event_related_post_id ? json_encode($request->event_related_post_id) : null,
                 'status' => $request->status,
+                'page_title' => $request->page_title,
+                'description' => $request->description,
+                'keywords' => $request->keywords,
+                'og_title' => $request->og_title,
+                'og_description' => $request->og_description,
                 'updated_by' => Auth::id(),
             ];
 
-            // Handle hero image upload
-            if ($request->hasFile('event_hero_image')) {
-                // Delete old hero image if it exists
-                if ($event->event_hero_image) {
-                    Storage::disk('public')->delete($event->event_hero_image);
+            // Handle thumbnail upload
+            if ($request->hasFile('thumbnail')) {
+                // Delete old thumbnail if it exists
+                if ($event->thumbnail) {
+                    Storage::disk('public')->delete($event->thumbnail);
                 }
-                $imagePath = $request->file('event_hero_image')->store('events', 'public');
-                $data['event_hero_image'] = $imagePath;
+                $imagePath = $request->file('thumbnail')->store('events', 'public');
+                $data['thumbnail'] = $imagePath;
             }
 
-            // Handle card image upload
-            if ($request->hasFile('event_card_image')) {
-                // Delete old card image if it exists
-                if ($event->event_card_image) {
-                    Storage::disk('public')->delete($event->event_card_image);
+            // Handle og_image upload
+            if ($request->hasFile('og_image')) {
+                // Delete old og_image if it exists
+                if ($event->og_image) {
+                    Storage::disk('public')->delete($event->og_image);
                 }
-                $imagePath = $request->file('event_card_image')->store('events', 'public');
-                $data['event_card_image'] = $imagePath;
+                $ogImagePath = $request->file('og_image')->store('events', 'public');
+                $data['og_image'] = $ogImagePath;
             }
 
             $event->update($data);
