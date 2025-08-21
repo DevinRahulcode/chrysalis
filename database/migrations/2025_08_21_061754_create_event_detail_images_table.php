@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('blog_detail_images', function (Blueprint $table) {
+        Schema::create('event_detail_images', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('blog_id')->nullable();
-            $table->foreign('blog_id')->references('id')->on('blogs')->onDelete('cascade');
-            $table->string('blog_image_slider')->nullable();
-             $table->char('status', 1)->default('1')->comment('Y = Active, N = inactive');
+            $table->unsignedBigInteger('event_id')->nullable();
+            $table->foreign('event_id')->references('id')->on('events')->onDelete('cascade');
+            $table->string('event_image_slider')->nullable();
+            $table->char('status', 1)->default('Y')->comment('Y = Active, N = Inactive');
             $table->unsignedBigInteger('created_by')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->unsignedBigInteger('deleted_by')->nullable();
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('blog_detail_images');
+        Schema::dropIfExists('event_detail_images');
     }
 };
